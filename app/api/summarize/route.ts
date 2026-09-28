@@ -1,6 +1,8 @@
 import { GoogleGenAI } from '@google/genai'
 import { NextResponse } from 'next/server'
 
+export const runtime = 'nodejs'
+
 // @ts-ignore
 const pdfParse = require('pdf-parse')
 
