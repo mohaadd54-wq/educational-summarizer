@@ -13,7 +13,6 @@ export async function POST(req: Request) {
 
     const contents: any[] = []
 
-    // تحويل ملف PDF إلى Base64 وإرساله مباشرة لـ Gemini
     if (file && file.size > 0) {
       const arrayBuffer = await file.arrayBuffer()
       const base64Data = Buffer.from(arrayBuffer).toString('base64')
