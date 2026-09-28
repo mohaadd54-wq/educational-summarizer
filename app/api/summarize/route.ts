@@ -40,7 +40,6 @@ export async function POST(req: Request) {
       contents: contents,
     })
 
-
     return NextResponse.json({ summary: response.text })
   } catch (error: any) {
     console.error('Summarize API Error:', error)
