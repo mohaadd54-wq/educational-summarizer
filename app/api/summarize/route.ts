@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 
     const contents: any[] = []
 
-    // في حال رفع ملف PDF
+    // تحويل ملف PDF إلى Base64 وإرساله مباشرة لـ Gemini
     if (file && file.size > 0) {
       const arrayBuffer = await file.arrayBuffer()
       const base64Data = Buffer.from(arrayBuffer).toString('base64')
@@ -26,7 +26,6 @@ export async function POST(req: Request) {
       })
     }
 
-    // في حال إضافة نص مع أو بدون ملف
     if (text && text.trim()) {
       contents.push(text)
     } else {
