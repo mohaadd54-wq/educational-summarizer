@@ -2,9 +2,10 @@ import { GoogleGenAI } from '@google/genai'
 import { NextResponse } from 'next/server'
 
 // @ts-ignore
-const pdfParse = require('pdf-parse/lib/pdf-parse.js')
+import pdfParse from 'pdf-parse'
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+
 
 
 export async function POST(req: Request) {
