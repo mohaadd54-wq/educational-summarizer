@@ -35,8 +35,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'يرجى تقديم نص أو رفع ملف للتلخيص' }, { status: 400 })
     }
 
-    // استخدام اسم الإصدار المحدد والمفعل لـ v1beta
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-002' })
+    // الاعتماد على النموذج الحديث المعتمد gemini-2.0-flash
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
     const result = await model.generateContent(contents)
     const responseText = result.response.text()
