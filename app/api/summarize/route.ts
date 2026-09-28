@@ -1,10 +1,9 @@
-import { GoogleGenAI } from '@google/genai'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import { NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
 
-// تحديد إعدادات المكتبة بشكل صريح
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
 export async function POST(req: Request) {
   try {
@@ -36,16 +35,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'يرجى تقديم نص أو رفع ملف للتلخيص' }, { status: 400 })
     }
 
-    // استدعاء الموديل عبر المسار المباشر بطلب v1
-    const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
-      contents: contents,
-      config: {
-        apiVersion: 'v1',
-      },
-    } as any)
+    // استخدام الحزمة المستقرة مع gemini-1.5-flash
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const result = await model.generateContent(contents)
+    const responseText = result.response.text()
 
-    return NextResponse.json({ summary: response.text })
+    return NextResponse.json({ summary: responseText })
   } catch (error: any) {
     console.error('Summarize API Error:', error)
     return NextResponse.json(
