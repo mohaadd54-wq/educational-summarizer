@@ -35,17 +35,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'يرجى تقديم نص أو رفع ملف للتلخيص' }, { status: 400 })
     }
 
-    // التحديث للنموذج المطلوب gemini-3.8-flash
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.8-flash' })
-
-    const result = await model.generateContent(contents)
-    const responseText = result.response.text()
+    // محاولة الاستدلال بالنموذج الأساسي أولاً، وفي حال وجود ضغط (503) يتم التبديل تلقائياً
+    let responseText = ''
+    try {
+      const model = genAI.getGenerativeModel({ model: 'gemini-3.8-flash' })
+      const result = await model.generateContent(contents)
+      responseText = result.response.text()
+    } catch (primaryError: any) {
+      console.warn('Primary model busy, switching to fallback model...', primaryError)
+      const fallbackModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+      const fallbackResult = await fallbackModel.generateContent(contents)
+      responseText = fallbackResult.response.text()
+    }
 
     return NextResponse.json({ summary: responseText })
   } catch (error: any) {
     console.error('Summarize API Error:', error)
     return NextResponse.json(
-      { error: error?.message || 'حدث خطأ أثناء الاتصال بالسيرفر' },
+      { error: 'السيرفر مشغول حالياً بسبب الضغط العالي، يرجى إعادة المحاولة بعد ثوانٍ قليلة.' },
       { status: 500 }
     )
   }
