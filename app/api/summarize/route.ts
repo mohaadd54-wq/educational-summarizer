@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
 
+// تحديد إعدادات المكتبة بشكل صريح
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
 
 export async function POST(req: Request) {
@@ -35,11 +36,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'يرجى تقديم نص أو رفع ملف للتلخيص' }, { status: 400 })
     }
 
-    // الاعتماد على نموذج gemini-1.5-flash المباشر والمدعوم للجميع
+    // استدعاء الموديل عبر المسار المباشر بطلب v1
     const response = await ai.models.generateContent({
       model: 'gemini-1.5-flash',
       contents: contents,
-    })
+      config: {
+        apiVersion: 'v1',
+      },
+    } as any)
 
     return NextResponse.json({ summary: response.text })
   } catch (error: any) {
