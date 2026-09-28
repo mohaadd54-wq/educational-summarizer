@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
 
-// تحديد الإصدار المستقر v1 مباشرة عند إنشاء الكائن
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
 export async function POST(req: Request) {
@@ -36,11 +35,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'يرجى تقديم نص أو رفع ملف للتلخيص' }, { status: 400 })
     }
 
-    // اجبار استخدام v1 مع نموذج gemini-1.5-flash
-    const model = genAI.getGenerativeModel(
-      { model: 'gemini-1.5-flash' },
-      { apiVersion: 'v1' }
-    )
+    // استخدام النموذج الأساسي بدون تخصيص apiVersion يدوياً لتجنب خطأ 404
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' })
 
     const result = await model.generateContent(contents)
     const responseText = result.response.text()
