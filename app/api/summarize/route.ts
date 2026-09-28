@@ -5,6 +5,29 @@ export const runtime = 'nodejs'
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
+// دالة تأخير لمنع تجاوز معدل الطلبات (Rate Limit)
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+async function generateWithRetry(contents: any[], retries = 3) {
+  const models = ['gemini-1.5-flash', 'gemini-1.5-pro']
+  
+  for (let attempt = 0; attempt < retries; attempt++) {
+    for (const modelName of models) {
+      try {
+        const model = genAI.getGenerativeModel({ model: modelName })
+        const result = await model.generateContent(contents)
+        const responseText = result.response.text()
+        if (responseText) return responseText
+      } catch (err: any) {
+        console.warn(`Attempt with ${modelName} failed:`, err?.message)
+      }
+    }
+    // الانتظار ثانية واحدة قبل محاولة الإعادة
+    await delay(1000)
+  }
+  throw new Error('جميع محاولات الاتصال بالنموذج فشلت، يرجى التحقق من المفتاح أو المحاولة لاحقاً.')
+}
+
 export async function POST(req: Request) {
   try {
     const formData = await req.formData()
@@ -35,24 +58,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'يرجى تقديم نص أو رفع ملف للتلخيص' }, { status: 400 })
     }
 
-    // محاولة الاستدلال بالنموذج الأساسي أولاً، وفي حال وجود ضغط (503) يتم التبديل تلقائياً
-    let responseText = ''
-    try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-3.8-flash' })
-      const result = await model.generateContent(contents)
-      responseText = result.response.text()
-    } catch (primaryError: any) {
-      console.warn('Primary model busy, switching to fallback model...', primaryError)
-      const fallbackModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
-      const fallbackResult = await fallbackModel.generateContent(contents)
-      responseText = fallbackResult.response.text()
-    }
-
-    return NextResponse.json({ summary: responseText })
+    const summary = await generateWithRetry(contents)
+    return NextResponse.json({ summary })
   } catch (error: any) {
     console.error('Summarize API Error:', error)
     return NextResponse.json(
-      { error: 'السيرفر مشغول حالياً بسبب الضغط العالي، يرجى إعادة المحاولة بعد ثوانٍ قليلة.' },
+      { error: error?.message || 'حدث خطأ غير متوقع أثناء المعالجة' },
       { status: 500 }
     )
   }
