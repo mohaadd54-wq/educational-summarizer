@@ -35,8 +35,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'يرجى تقديم نص أو رفع ملف للتلخيص' }, { status: 400 })
     }
 
+    // استخدام النموذج الأثبت والأسرع عالمياً
     const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
+      model: 'gemini-1.5-flash',
       contents: contents,
     })
 
