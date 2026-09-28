@@ -1,7 +1,7 @@
 import { GoogleGenAI } from '@google/genai'
 import { NextResponse } from 'next/server'
 // @ts-ignore
-import pdfParse from 'pdf-parse/lib/pdf-parse.js'
+import pdfParse from 'pdf-parse'
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
 
