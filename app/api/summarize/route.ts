@@ -35,10 +35,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'يرجى تقديم نص أو رفع ملف للتلخيص' }, { status: 400 })
     }
 
-    const response = await ai.models.generateContent({
+        const response = await ai.models.generateContent({
       model: 'gemini-3.8-flash',
       contents: contents,
     })
+
 
     return NextResponse.json({ summary: response.text })
   } catch (error: any) {
