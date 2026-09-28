@@ -35,7 +35,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'يرجى تقديم نص أو رفع ملف للتلخيص' }, { status: 400 })
     }
 
-    // تم التحديث إلى النموذج المعتمد والمطلوب من Google
     const response = await ai.models.generateContent({
       model: 'gemini-3.8-flash',
       contents: contents,
