@@ -38,7 +38,7 @@ export async function POST(req: Request) {
       contents.push('قم بتلخيص هذا المستند بشكل واضح ومبسط باللغة العربية مع استخراج أهم النقاط والمفاهيم الرئيسية.')
     }
 
-    // الاعتماد المباشر على gemini-2.0-flash
+    // الاعتماد المباشر على gemini-3.8-flash
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
     const result = await model.generateContent(contents)
     const responseText = result.response.text()
