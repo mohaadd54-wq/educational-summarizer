@@ -3,33 +3,17 @@ import { NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
-
-// دالة تأخير لمنع تجاوز معدل الطلبات (Rate Limit)
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
-async function generateWithRetry(contents: any[], retries = 3) {
-  const models = ['gemini-1.5-flash', 'gemini-1.5-pro']
-  
-  for (let attempt = 0; attempt < retries; attempt++) {
-    for (const modelName of models) {
-      try {
-        const model = genAI.getGenerativeModel({ model: modelName })
-        const result = await model.generateContent(contents)
-        const responseText = result.response.text()
-        if (responseText) return responseText
-      } catch (err: any) {
-        console.warn(`Attempt with ${modelName} failed:`, err?.message)
-      }
-    }
-    // الانتظار ثانية واحدة قبل محاولة الإعادة
-    await delay(1000)
-  }
-  throw new Error('جميع محاولات الاتصال بالنموذج فشلت، يرجى التحقق من المفتاح أو المحاولة لاحقاً.')
-}
-
 export async function POST(req: Request) {
   try {
+    const apiKey = process.env.GEMINI_API_KEY
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: 'مفتاح GEMINI_API_KEY غير موجود في Vercel' },
+        { status: 500 }
+      )
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey)
     const formData = await req.formData()
     const text = formData.get('text') as string
     const file = formData.get('file') as File | null
@@ -54,16 +38,16 @@ export async function POST(req: Request) {
       contents.push('قم بتلخيص هذا المستند بشكل واضح ومبسط باللغة العربية مع استخراج أهم النقاط والمفاهيم الرئيسية.')
     }
 
-    if (contents.length === 0) {
-      return NextResponse.json({ error: 'يرجى تقديم نص أو رفع ملف للتلخيص' }, { status: 400 })
-    }
+    // الاعتماد المباشر على gemini-2.0-flash
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
+    const result = await model.generateContent(contents)
+    const responseText = result.response.text()
 
-    const summary = await generateWithRetry(contents)
-    return NextResponse.json({ summary })
+    return NextResponse.json({ summary: responseText })
   } catch (error: any) {
     console.error('Summarize API Error:', error)
     return NextResponse.json(
-      { error: error?.message || 'حدث خطأ غير متوقع أثناء المعالجة' },
+      { error: error?.message || 'حدث خطأ أثناء معالجة الطلب' },
       { status: 500 }
     )
   }
