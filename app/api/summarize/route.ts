@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) {
       return NextResponse.json(
-        { error: 'مفتاح GEMINI_API_KEY غير موجود في Vercel' },
+        { error: 'مفتاح GEMINI_API_KEY غير معرف' },
         { status: 500 }
       )
     }
@@ -38,8 +38,8 @@ export async function POST(req: Request) {
       contents.push('قم بتلخيص هذا المستند بشكل واضح ومبسط باللغة العربية مع استخراج أهم النقاط والمفاهيم الرئيسية.')
     }
 
-    // الاعتماد المباشر على gemini-3.8-flash
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
+    // الاعتماد المباشر على النموذج المطلوب في الخطأ: gemini-3.8-flash
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.8-flash' })
     const result = await model.generateContent(contents)
     const responseText = result.response.text()
 
